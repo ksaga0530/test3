@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Auth - MyNotes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .app-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .app-title {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .firebase-badge {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        .setup-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        
+        .setup-info h4 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+        
+        .setup-info .code-block {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .setup-info .highlight {
+            background: #ffeb3b;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .auth-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .mode-toggle {
+            display: flex;
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .mode-btn {
+            flex: 1;
+            padding: 15px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .mode-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .auth-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: #333;
+        }
+        
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .auth-btn.google {
+            border-color: #4285f4;
+            color: #4285f4;
+        }
+        
+        .auth-btn.apple {
+            border-color: #000;
+            color: #000;
+        }
+        
+        .auth-btn.email {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .auth-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.connected {
+            background: #28a745;
+        }
+        
+        .status-indicator.demo {
+            background: #ffc107;
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            color: #666;
+            font-size: 14px;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e9ecef;
+            z-index: 1;
+        }
+        
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .main-app {
+            display: none;
+        }
+        
+        .user-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #667eea;
+        }
+        
+        .user-details h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .user-details p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .logout-btn:hover {
+            background: #c82333;
+        }
+        
+        .notes-section {
+            text-align: left;
+        }
+        
+        .note-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .note-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .add-note-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        
+        .add-note-btn:hover {
+            background: #218838;
+        }
+        
+        .notes-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .note-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .note-content {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .note-meta {
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .delete-note-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <span class="firebase-badge">🔥 Firebase Authentication</span>
+        <h1 class="app-title">
+            📝 MyNotes Pro
+        </h1>
+        
+        <!-- 認証画面 -->
+        <div class="auth-container" id="authContainer">
+            <div class="setup-info">
+                <h4>📋 Firebase設定方法</h4>
+                <p><strong>ステップ1:</strong> Firebase Consoleでプロジェクト作成</p>
+                <p><strong>ステップ2:</strong> HTMLの以下の部分に設定を貼り付け：</p>
+                <div class="code-block">
+// <span class="highlight">ここを編集してください</span> ↓<br>
+const firebaseConfig = {<br>
+&nbsp;&nbsp;apiKey: "<span class="highlight">YOUR_API_KEY</span>",<br>
+&nbsp;&nbsp;authDomain: "<span class="highlight">YOUR_PROJECT.firebaseapp.com</span>",<br>
+&nbsp;&nbsp;// ... 他の設定
+                </div>
+                <p><strong>ステップ3:</strong> GitHub Pagesにデプロイ</p>
+            </div>
+            
+            <!-- モード切り替え -->
+            <div class="mode-toggle">
+                <button class="mode-btn active" onclick="switchMode('demo')">🚀 デモモード</button>
+                <button class="mode-btn" onclick="switchMode('firebase')">🔥 Firebase接続</button>
+            </div>
+            
+            <!-- ステータス表示 -->
+            <div class="status-display">
+                <span class="status-indicator demo" id="statusIndicator"></span>
+                <span id="statusText">デモモード - 設定不要で体験できます</span>
+            </div>
+            
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+            
+            <!-- 認証ボタン -->
+            <div class="auth-buttons">
+                <button class="auth-btn google" onclick="signInWithProvider('google')">
+                    🔍 Googleでログイン
+                </button>
+                
+                <button class="auth-btn apple" onclick="signInWithProvider('apple')">
+                    🍎 Appleでログイン
+                </button>
+                
+                <div class="divider">
+                    <span>または</span>
+                </div>
+                
+                <button class="auth-btn email" onclick="signInWithEmail()">
+                    ✉️ メールアドレスでログイン
+                </button>
+            </div>
+        </div>
+        
+        <!-- メインアプリ -->
+        <div class="main-app" id="mainApp">
+            <div class="user-info">
+                <div class="user-profile">
+                    <img class="user-avatar" id="userAvatar" src="" alt="プロフィール">
+                    <div class="user-details">
+                        <h3 id="userName">ユーザー名</h3>
+                        <p id="userEmail">email@example.com</p>
+                        <p id="userProvider" style="font-size: 12px; color: #999;"></p>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="signOut()">ログアウト</button>
+            </div>
+            
+            <div class="notes-section">
+                <h3>📝 新しいメモを追加</h3>
+                <textarea class="note-input" id="noteInput" placeholder="ここにメモを書いてください..."></textarea>
+                <button class="add-note-btn" onclick="addNote()">💾 メモを保存</button>
+                
+                <h3>📚 あなたのメモ</h3>
+                <div class="notes-list" id="notesList">
+                    <div class="empty-state">
+                        まだメモがありません。<br>上記からメモを追加してみましょう！
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // ⚠️ ここにFirebase設定を貼り付けてください ⚠️
+        const firebaseConfig = {
+            apiKey: "AIzaSyANyBoW_DkFrg6wsC9SWwb1LxASj7w49j8",
+            authDomain: "test3-92c04.firebaseapp.com",
+            projectId: "test3-92c04",
+            storageBucket: "test3-92c04.firebasestorage.app",
+            messagingSenderId: "453089500721",
+            appId: "1:453089500721:web:1510447a4db63799637f10",
+            measurementId: "G-WYQ5RLNNRC"
+        };
+        
+        // アプリの状態
+        let app = null;
+        let auth = null;
+        let currentUser = null;
+        let currentMode = 'demo'; // 'demo' または 'firebase'
+        
+        // Firebase機能をロード
+        const loadFirebase = async () => {
+            try {
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+                const { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut: firebaseSignOut, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                
+                return { initializeApp, getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, firebaseSignOut, onAuthStateChanged };
+            } catch (error) {
+                console.error('Firebase SDK読み込みエラー:', error);
+                throw error;
+            }
+        };
+        
+        // Firebase初期化
+        const initFirebase = async () => {
+            try {
+                // 設定チェック
+                if (firebaseConfig.apiKey === 'YOUR_API_KEY') {
+                    throw new Error('Firebase設定が未設定です');
+                }
+                
+                const firebase = await loadFirebase();
+                app = firebase.initializeApp(firebaseConfig);
+                auth = firebase.getAuth(app);
+                
+                // 認証状態の監視
+                firebase.onAuthStateChanged(auth, (user) => {
+                    if (user && currentMode === 'firebase') {
+                        currentUser = {
+                            name: user.displayName || 'Firebase ユーザー',
+                            email: user.email,
+                            avatar: user.photoURL || 'https://via.placeholder.com/50/667eea/ffffff?text=👤',
+                            provider: user.providerData[0]?.providerId || 'firebase',
+                            uid: user.uid
+                        };
+                        showMainApp();
+                    }
+                });
+                
+                // グローバルに保存
+                window.firebase = firebase;
+                return true;
+                
+            } catch (error) {
+                console.error('Firebase初期化エラー:', error);
+                return false;
+            }
+        };
+        
+        // モード切り替え
+        window.switchMode = async (mode) => {
+            currentMode = mode;
+            const buttons = document.querySelectorAll('.mode-btn');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            if (mode === 'demo') {
+                buttons[0].classList.add('active');
+                statusIndicator.className = 'status-indicator demo';
+                statusText.textContent = 'デモモード - 設定不要で体験できます';
+            } else {
+                buttons[1].classList.add('active');
+                
+                const firebaseReady = await initFirebase();
+                if (firebaseReady) {
+                    statusIndicator.className = 'status-indicator connected';
+                    statusText.textContent = 'Firebase接続済み - 本格認証が利用可能';
+                } else {
+                    statusIndicator.className = 'status-indicator demo';
+                    statusText.textContent = 'Firebase未設定 - HTMLファイルを編集してください';
+                    currentMode = 'demo'; // フォールバック
+                    buttons[0].classList.add('active');
+                    buttons[1].classList.remove('active');
+                }
+            }
+        };
+        
+        // プロバイダーでのサインイン
+        window.signInWithProvider = async (providerName) => {
+            if (currentMode === 'demo') {
+                // デモログイン
+                const demoUsers = {
+                    google: {
+                        name: 'Google ユーザー',
+                        email: 'google.user@gmail.com',
+                        avatar: 'https://via.placeholder.com/50/4285f4/ffffff?text=G',
+                        provider: 'google (デモ)'
+                    },
+                    apple: {
+                        name: 'Apple ユーザー',
+                        email: 'apple.user@icloud.com',
+                        avatar: 'https://via.placeholder.com/50/000000/ffffff?text=🍎',
+                        provider: 'apple (デモ)'
+                    }
+                };
+                
+                currentUser = demoUsers[providerName];
+                showSuccess(`${providerName}でログインしました！（デモ版）`);
+                setTimeout(showMainApp, 1000);
+                return;
+            }
+            
+            // Firebase認証
+            if (!auth) {
+                showError('Firebaseが初期化されていません');
+                return;
+            }
+            
+            try {
+                const firebase = window.firebase;
+                let provider;
+                
+                switch (providerName) {
+                    case 'google':
+                        provider = new firebase.GoogleAuthProvider();
+                        break;
+                    case 'apple':
+                        provider = new firebase.OAuthProvider('apple.com');
+                        break;
+                    default:
+                        throw new Error('未対応のプロバイダーです');
+                }
+                
+                await firebase.signInWithPopup(auth, provider);
+                
+            } catch (error) {
+                console.error('認証エラー:', error);
+                showError(`${providerName}認証に失敗しました: ${error.message}`);
+            }
+        };
+        
+        // メール認証
+        window.signInWithEmail = () => {
+            if (currentMode === 'demo') {
+                currentUser = {
+                    name: 'メールユーザー',
+                    email: 'email.user@example.com',
+                    avatar: 'https://via.placeholder.com/50/667eea/ffffff?text=✉️',
+                    provider: 'email (デモ)'
+                };
+                showSuccess('メールでログインしました！（デモ版）');
+                setTimeout(showMainApp, 1000);
+                return;
+            }
+            
+            showError('メール認証は本格実装版で利用可能です');
+        };
+        
+        // サインアウト
+        window.signOut = async () => {
+            if (currentMode === 'demo') {
+                currentUser = null;
+                showAuthScreen();
+                return;
+            }
+            
+            if (auth && window.firebase) {
+                await window.firebase.firebaseSignOut(auth);
+                showAuthScreen();
+            }
+        };
+        
+        // メインアプリ表示
+        window.showMainApp = () => {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userEmail').textContent = currentUser.email;
+                document.getElementById('userAvatar').src = currentUser.avatar;
+                document.getElementById('userProvider').textContent = `${currentUser.provider}でログイン`;
+            }
+            
+            loadNotes();
+        };
+        
+        // 認証画面表示
+        window.showAuthScreen = () => {
+            document.getElementById('authContainer').style.display = 'block';
+            document.getElementById('mainApp').style.display = 'none';
+        };
+        
+        // メモ機能
+        window.addNote = () => {
+            const noteText = document.getElementById('noteInput').value.trim();
+            if (!noteText) {
+                alert('メモの内容を入力してください');
+                return;
+            }
+            
+            const storageKey = currentMode === 'demo' ? 'demo_notes' : `notes_${currentUser.uid || currentUser.email}`;
+            const notes = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            
+            const newNote = {
+                id: Date.now(),
+                content: noteText,
+                createdAt: new Date().toISOString()
+            };
+            
+            notes.unshift(newNote);
+            localStorage.setItem(storageKey, JSON.stringify(notes));
+            
+            document.getElementById('noteInput').value = '';
+            loadNotes();
+        };
+        
+        window.loadNotes = () => {
+            const storageKey = currentMode === 'demo' ? 'demo_notes' : `notes_${currentUser.uid || currentUser.email}`;
+            const notes = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            const notesList = document.getElementById('notesList');
+            
+            if (notes.length === 0) {
+                notesList.innerHTML = `
+                    <div class="empty-state">
+                        まだメモがありません。<br>上記からメモを追加してみましょう！
+                    </div>
+                `;
+                return;
+            }
+            
+            notesList.innerHTML = notes.map(note => `
+                <div class="note-item">
+                    <div class="note-content">${note.content}</div>
+                    <div class="note-meta">
+                        <span>${new Date(note.createdAt).toLocaleString()}</span>
+                        <button class="delete-note-btn" onclick="deleteNote(${note.id})">削除</button>
+                    </div>
+                </div>
+            `).join('');
+        };
+        
+        window.deleteNote = (noteId) => {
+            if (confirm('このメモを削除しますか？')) {
+                const storageKey = currentMode === 'demo' ? 'demo_notes' : `notes_${currentUser.uid || currentUser.email}`;
+                const notes = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                const filteredNotes = notes.filter(note => note.id !== noteId);
+                localStorage.setItem(storageKey, JSON.stringify(filteredNotes));
+                loadNotes();
+            }
+        };
+        
+        // メッセージ表示
+        window.showError = (message) => {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        };
+        
+        window.showSuccess = (message) => {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        };
+        
+        // 初期化
+        window.onload = () => {
+            switchMode('demo');
+        };
+    </script>
+</body>
+</html>
