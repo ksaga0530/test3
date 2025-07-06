@@ -157,6 +157,105 @@
             border-color: #667eea;
         }
         
+        .email-form {
+            display: none;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .email-form.show {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .form-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .form-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .form-btn.primary:hover {
+            background: #5a6fd8;
+        }
+        
+        .form-btn.secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .form-btn.secondary:hover {
+            background: #5a6268;
+        }
+        
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .auth-tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
         .auth-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -406,17 +505,61 @@ const firebaseConfig = {<br>
                     🔍 Googleでログイン
                 </button>
                 
-                <button class="auth-btn apple" onclick="signInWithProvider('apple')">
-                    🍎 Appleでログイン
-                </button>
-                
                 <div class="divider">
                     <span>または</span>
                 </div>
                 
-                <button class="auth-btn email" onclick="signInWithEmail()">
+                <button class="auth-btn email" onclick="toggleEmailForm()">
                     ✉️ メールアドレスでログイン
                 </button>
+                
+                <!-- メール認証フォーム -->
+                <div class="email-form" id="emailForm">
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" onclick="switchEmailTab('login')">ログイン</button>
+                        <button class="auth-tab" onclick="switchEmailTab('register')">新規登録</button>
+                    </div>
+                    
+                    <!-- ログインフォーム -->
+                    <div id="loginForm">
+                        <div class="form-group">
+                            <label for="loginEmail">メールアドレス</label>
+                            <input type="email" id="loginEmail" class="form-input" placeholder="example@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">パスワード</label>
+                            <input type="password" id="loginPassword" class="form-input" placeholder="パスワード">
+                        </div>
+                        <div class="form-buttons">
+                            <button class="form-btn primary" onclick="signInWithEmail('login')">ログイン</button>
+                            <button class="form-btn secondary" onclick="toggleEmailForm()">キャンセル</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 新規登録フォーム -->
+                    <div id="registerForm" style="display: none;">
+                        <div class="form-group">
+                            <label for="registerName">表示名</label>
+                            <input type="text" id="registerName" class="form-input" placeholder="あなたの名前">
+                        </div>
+                        <div class="form-group">
+                            <label for="registerEmail">メールアドレス</label>
+                            <input type="email" id="registerEmail" class="form-input" placeholder="example@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="registerPassword">パスワード</label>
+                            <input type="password" id="registerPassword" class="form-input" placeholder="6文字以上のパスワード">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">パスワード確認</label>
+                            <input type="password" id="confirmPassword" class="form-input" placeholder="パスワードを再入力">
+                        </div>
+                        <div class="form-buttons">
+                            <button class="form-btn primary" onclick="signInWithEmail('register')">新規登録</button>
+                            <button class="form-btn secondary" onclick="toggleEmailForm()">キャンセル</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -453,13 +596,13 @@ const firebaseConfig = {<br>
     <script type="module">
         // ⚠️ ここにFirebase設定を貼り付けてください ⚠️
         const firebaseConfig = {
-            apiKey: "AIzaSyANyBoW_DkFrg6wsC9SWwb1LxASj7w49j8",
-            authDomain: "test3-92c04.firebaseapp.com",
-            projectId: "test3-92c04",
-            storageBucket: "test3-92c04.firebasestorage.app",
-            messagingSenderId: "453089500721",
-            appId: "1:453089500721:web:1510447a4db63799637f10",
-            measurementId: "G-WYQ5RLNNRC"
+          apiKey: "AIzaSyANyBoW_DkFrg6wsC9SWwb1LxASj7w49j8",
+          authDomain: "test3-92c04.firebaseapp.com",
+          projectId: "test3-92c04",
+          storageBucket: "test3-92c04.firebasestorage.app",
+          messagingSenderId: "453089500721",
+          appId: "1:453089500721:web:1510447a4db63799637f10",
+          measurementId: "G-WYQ5RLNNRC"
         };
         
         // アプリの状態
@@ -472,9 +615,9 @@ const firebaseConfig = {<br>
         const loadFirebase = async () => {
             try {
                 const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-                const { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut: firebaseSignOut, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                const { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut: firebaseSignOut, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
                 
-                return { initializeApp, getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, firebaseSignOut, onAuthStateChanged };
+                return { initializeApp, getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, firebaseSignOut, onAuthStateChanged };
             } catch (error) {
                 console.error('Firebase SDK読み込みエラー:', error);
                 throw error;
@@ -557,12 +700,6 @@ const firebaseConfig = {<br>
                         email: 'google.user@gmail.com',
                         avatar: 'https://via.placeholder.com/50/4285f4/ffffff?text=G',
                         provider: 'google (デモ)'
-                    },
-                    apple: {
-                        name: 'Apple ユーザー',
-                        email: 'apple.user@icloud.com',
-                        avatar: 'https://via.placeholder.com/50/000000/ffffff?text=🍎',
-                        provider: 'apple (デモ)'
                     }
                 };
                 
@@ -586,9 +723,6 @@ const firebaseConfig = {<br>
                     case 'google':
                         provider = new firebase.GoogleAuthProvider();
                         break;
-                    case 'apple':
-                        provider = new firebase.OAuthProvider('apple.com');
-                        break;
                     default:
                         throw new Error('未対応のプロバイダーです');
                 }
@@ -601,8 +735,43 @@ const firebaseConfig = {<br>
             }
         };
         
+        // メール認証フォーム表示切り替え
+        window.toggleEmailForm = () => {
+            const emailForm = document.getElementById('emailForm');
+            emailForm.classList.toggle('show');
+            
+            if (!emailForm.classList.contains('show')) {
+                // フォームをリセット
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
+                document.getElementById('registerName').value = '';
+                document.getElementById('registerEmail').value = '';
+                document.getElementById('registerPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            }
+        };
+        
+        // メール認証タブ切り替え
+        window.switchEmailTab = (tab) => {
+            const tabs = document.querySelectorAll('.auth-tab');
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            if (tab === 'login') {
+                tabs[0].classList.add('active');
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+            } else {
+                tabs[1].classList.add('active');
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+            }
+        };
+        
         // メール認証
-        window.signInWithEmail = () => {
+        window.signInWithEmail = async (action) => {
             if (currentMode === 'demo') {
                 currentUser = {
                     name: 'メールユーザー',
@@ -611,11 +780,94 @@ const firebaseConfig = {<br>
                     provider: 'email (デモ)'
                 };
                 showSuccess('メールでログインしました！（デモ版）');
+                toggleEmailForm();
                 setTimeout(showMainApp, 1000);
                 return;
             }
             
-            showError('メール認証は本格実装版で利用可能です');
+            if (!auth || !window.firebase) {
+                showError('Firebaseが初期化されていません');
+                return;
+            }
+            
+            try {
+                if (action === 'login') {
+                    // ログイン
+                    const email = document.getElementById('loginEmail').value.trim();
+                    const password = document.getElementById('loginPassword').value;
+                    
+                    if (!email || !password) {
+                        showError('メールアドレスとパスワードを入力してください');
+                        return;
+                    }
+                    
+                    await window.firebase.signInWithEmailAndPassword(auth, email, password);
+                    showSuccess('ログインしました！');
+                    toggleEmailForm();
+                    
+                } else if (action === 'register') {
+                    // 新規登録
+                    const name = document.getElementById('registerName').value.trim();
+                    const email = document.getElementById('registerEmail').value.trim();
+                    const password = document.getElementById('registerPassword').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+                    
+                    if (!name || !email || !password || !confirmPassword) {
+                        showError('すべての項目を入力してください');
+                        return;
+                    }
+                    
+                    if (password !== confirmPassword) {
+                        showError('パスワードが一致しません');
+                        return;
+                    }
+                    
+                    if (password.length < 6) {
+                        showError('パスワードは6文字以上で入力してください');
+                        return;
+                    }
+                    
+                    // アカウント作成
+                    const userCredential = await window.firebase.createUserWithEmailAndPassword(auth, email, password);
+                    
+                    // 表示名を設定
+                    await window.firebase.updateProfile(userCredential.user, {
+                        displayName: name
+                    });
+                    
+                    showSuccess('アカウントが作成されました！');
+                    toggleEmailForm();
+                }
+                
+            } catch (error) {
+                console.error('メール認証エラー:', error);
+                
+                let errorMessage = 'エラーが発生しました';
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = 'このメールアドレスは登録されていません';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = 'パスワードが間違っています';
+                        break;
+                    case 'auth/email-already-in-use':
+                        errorMessage = 'このメールアドレスは既に使用されています';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = 'パスワードが弱すぎます（6文字以上推奨）';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'メールアドレスの形式が正しくありません';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = 'しばらく時間をおいてから再試行してください';
+                        break;
+                    default:
+                        errorMessage = error.message;
+                }
+                
+                showError(errorMessage);
+            }
         };
         
         // サインアウト
